@@ -42,7 +42,7 @@ def symbolize_layer(layer: QgsVectorLayer, neighbours: dict) -> None:
     QgsProject.instance().addMapLayer(point_layer)
     symbol  = point_layer.renderer().symbol()
     symbol.setColor(QColor("red"))
-    symbol.setSize(5)
+    symbol.setSize(3)
     point_layer.triggerRepaint()
 
 
