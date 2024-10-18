@@ -54,7 +54,6 @@ if __name__ == '__console__':
     qgs_project_path = QgsProject.instance().readPath("./")
     layer_relative_path = "/Output/Buildings.shp"
     layer_path = qgs_project_path + layer_relative_path
-    print(layer_path, "layer_path")
     layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
     if not layer.isValid():
         raise Exception('Layer is invalid')
