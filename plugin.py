@@ -1,4 +1,4 @@
-from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField
+from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemLayout, QgsLayoutItemPage
 from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtGui import QColor
 
@@ -60,12 +60,30 @@ class NeighboursLayer:
 
         return None
 
+def create_layout(layout_name):
+    project = QgsProject.instance()
+    existing_layout = project.layoutManager().layoutByName(name=layout_name)  # Returns the layout with a matching name, or None if no matching layouts were found.
+
+    if existing_layout is not None:
+        project.layoutManager().removeLayout(layout=existing_layout)
+    
+    layout = QgsPrintLayout(project=project) # Create a new layout and set it properties
+    layout.initializeDefaults() # Set layout size (A4 in mm)
+    layout.setName(layout_name)
+    
+    pc = layout.pageCollection()
+    pc.page(0).setPageSize('A4', QgsLayoutItemPage.Orientation.Landscape) # Turn layout canvas to Landscape mode
+
+    project.layoutManager().addLayout(layout)
+    return False
 
 if __name__ == '__console__':
-    qgs_project_path = QgsProject.instance().readPath("./")
-    layer_relative_path = "/Output/Buildings.shp"
-    layer_path = qgs_project_path + layer_relative_path
-    layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
-    if not layer.isValid():
-        raise Exception('Layer is invalid')
-    NeighboursLayer(layer=layer).symbolize_layer()
+    # qgs_project_path = QgsProject.instance().readPath("./")
+    # layer_relative_path = "/Output/Buildings.shp"
+    # layer_path = qgs_project_path + layer_relative_path
+    # layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
+    # if not layer.isValid():
+    #     raise Exception('Layer is invalid')
+    # NeighboursLayer(layer=layer).symbolize_layer()
+
+    print(create_layout(layout_name="Buildings of Feuerbach with more than one neighbour"))
