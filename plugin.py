@@ -1,6 +1,7 @@
-from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemPage, \
-     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar, \
-     QgsLayoutItemLegend
+import os
+from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsPrintLayout, QgsLayoutItemPage, QgsLayoutItemMap, \
+     QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar, \
+     QgsLayoutItemLegend, QgsLayoutItemPicture
 from qgis.PyQt.QtCore import QVariant, Qt
 from qgis.PyQt.QtGui import QColor, QFont
 from qgis.utils import iface
@@ -136,11 +137,22 @@ def add_legend(layout: QgsPrintLayout) -> None:
     legend.resizeToContents()
     layout.addLayoutItem(legend)
     return None
-def add_north_arrow(layout: QgsPrintLayout) -> None: ...
 
+def add_north_arrow(layout: QgsPrintLayout, arrow_path) -> None:
+    north_arrow = QgsLayoutItemPicture(layout=layout)
+    north_arrow.setNorthMode(QgsLayoutItemPicture.NorthMode.GridNorth)
+    north_arrow.setMode(QgsLayoutItemPicture.Format.FormatSVG)
+    north_arrow.setResizeMode(QgsLayoutItemPicture.ResizeMode.Zoom)
+    north_arrow.setLinkedMap(map=add_map_item(layout=layout))
+    north_arrow.setPicturePath(path=arrow_path)
+    
+    north_arrow.attemptMove(QgsLayoutPoint(249,23, QgsUnitTypes.LayoutMillimeters))
+    north_arrow.attemptResize(QgsLayoutSize(width=48, height=88, units=QgsUnitTypes.LayoutMillimeters))
+    layout.addLayoutItem(north_arrow)
+    return None
 
 if __name__ == '__console__':
-    # qgs_project_path = QgsProject.instance().readPath("./")
+    qgs_project_path = QgsProject.instance().readPath("./")
     # layer_relative_path = "/Output/Buildings.shp"
     # layer_path = qgs_project_path + layer_relative_path
     # layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
@@ -153,4 +165,6 @@ if __name__ == '__console__':
     # add_map_item(layout=layout)
     # add_map_title(layout=layout)
     add_legend(layout=layout)
+    arrow_path = qgs_project_path + "/Input/NorthArrow_04.svg"
+    add_north_arrow(layout=layout, arrow_path=arrow_path)
 
