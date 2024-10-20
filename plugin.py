@@ -1,5 +1,5 @@
 from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemPage, \
-     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel
+     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar
 from qgis.PyQt.QtCore import QVariant, Qt
 from qgis.PyQt.QtGui import QColor, QFont
 from qgis.utils import iface
@@ -92,7 +92,7 @@ def add_map_item(layout: QgsPrintLayout) -> None:
     map.setFrameStrokeColor(color=QColor("black"))
     map.setFrameStrokeWidth(width=QgsLayoutMeasurement(length=0.30, units=QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(map)
-    return None
+    return map
 
 def add_map_title(layout: QgsPrintLayout) -> None:
     title = QgsLayoutItemLabel(layout=layout)
@@ -111,6 +111,23 @@ def add_map_title(layout: QgsPrintLayout) -> None:
     layout.addLayoutItem(title)
     return None
 
+def add_scale_bar(layout: QgsPrintLayout) -> None:
+    scale = QgsLayoutItemScaleBar(layout=layout)
+    scale.applyDefaultSettings()
+    scale.setUnits(units=QgsUnitTypes.DistanceMeters)
+    scale.setUnitLabel(label="m")
+
+    scale.setLinkedMap(map=add_map_item(layout=layout))
+
+    scale.attemptMove(QgsLayoutPoint(70,178, QgsUnitTypes.LayoutMillimeters))
+    scale.setUnitsPerSegment(100)
+    scale.setMapUnitsPerScaleBarUnit(1)
+    layout.addLayoutItem(scale)
+    return None
+
+def add_legend(layout: QgsPrintLayout) -> None: ...
+def add_north_arrow(layout: QgsPrintLayout) -> None: ...
+
 
 if __name__ == '__console__':
     # qgs_project_path = QgsProject.instance().readPath("./")
@@ -123,6 +140,7 @@ if __name__ == '__console__':
 
     layout = create_layout(layout_name="Buildings of Feuerbach with more than one neighbour")
 
-    add_map_item(layout=layout)
-    add_map_title(layout=layout)
+    # add_map_item(layout=layout)
+    # add_map_title(layout=layout)
+    add_scale_bar(layout=layout)
 
