@@ -1,7 +1,7 @@
 from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemPage, \
-     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutFrame, QgsLayoutMeasurement
-from qgis.PyQt.QtCore import QVariant
-from qgis.PyQt.QtGui import QColor
+     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel
+from qgis.PyQt.QtCore import QVariant, Qt
+from qgis.PyQt.QtGui import QColor, QFont
 from qgis.utils import iface
 
 
@@ -79,7 +79,7 @@ def create_layout(layout_name: str):
     project.layoutManager().addLayout(layout)
     return layout
 
-def add_map_item(layout: QgsPrintLayout):
+def add_map_item(layout: QgsPrintLayout) -> None:
     map = QgsLayoutItemMap(layout)
     # Set map item position and size (by default, it is a 0 width/0 height item placed at 0,0)
     map.attemptMove(QgsLayoutPoint(22,24, QgsUnitTypes.LayoutMillimeters))
@@ -92,6 +92,25 @@ def add_map_item(layout: QgsPrintLayout):
     map.setFrameStrokeColor(color=QColor("black"))
     map.setFrameStrokeWidth(width=QgsLayoutMeasurement(length=0.30, units=QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(map)
+    return None
+
+def add_map_title(layout: QgsPrintLayout) -> None:
+    title = QgsLayoutItemLabel(layout=layout)
+    title.setText(text="A Map of Buildings with more than one Neighbour in Feuerbach, Stuttgart")
+    
+    title_font = QFont("Helvetica", pointSize=16, weight=6, italic=False)
+    title_font.setBold(True)
+    title_font.setUnderline(True)
+    title.setFont(font=title_font)
+    title.setFontColor(color=QColor("black"))
+
+    title.attemptMove(QgsLayoutPoint(35,7, QgsUnitTypes.LayoutMillimeters))
+    title.attemptResize(QgsLayoutSize(205,11, QgsUnitTypes.LayoutMillimeters))
+    title.setHAlign(alignment=Qt.AlignmentFlag.AlignHCenter)
+    title.setVAlign(alignment=Qt.AlignmentFlag.AlignVCenter)
+    layout.addLayoutItem(title)
+    return None
+
 
 if __name__ == '__console__':
     # qgs_project_path = QgsProject.instance().readPath("./")
@@ -104,5 +123,6 @@ if __name__ == '__console__':
 
     layout = create_layout(layout_name="Buildings of Feuerbach with more than one neighbour")
 
-    print(layout, "layout")
     add_map_item(layout=layout)
+    add_map_title(layout=layout)
+
