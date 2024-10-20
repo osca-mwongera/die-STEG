@@ -1,6 +1,8 @@
-from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemLayout, QgsLayoutItemPage
+from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemPage, \
+     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutFrame, QgsLayoutMeasurement
 from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtGui import QColor
+from qgis.utils import iface
 
 
 class NeighboursLayer:
@@ -60,7 +62,7 @@ class NeighboursLayer:
 
         return None
 
-def create_layout(layout_name):
+def create_layout(layout_name: str):
     project = QgsProject.instance()
     existing_layout = project.layoutManager().layoutByName(name=layout_name)  # Returns the layout with a matching name, or None if no matching layouts were found.
 
@@ -75,7 +77,21 @@ def create_layout(layout_name):
     pc.page(0).setPageSize('A4', QgsLayoutItemPage.Orientation.Landscape) # Turn layout canvas to Landscape mode
 
     project.layoutManager().addLayout(layout)
-    return False
+    return layout
+
+def add_map_item(layout: QgsPrintLayout):
+    map = QgsLayoutItemMap(layout)
+    # Set map item position and size (by default, it is a 0 width/0 height item placed at 0,0)
+    map.attemptMove(QgsLayoutPoint(22,24, QgsUnitTypes.LayoutMillimeters))
+    map.attemptResize(QgsLayoutSize(222,153, QgsUnitTypes.LayoutMillimeters))
+    # Provide an extent to render
+    map.zoomToExtent(iface.mapCanvas().extent())
+
+    # Add map frame
+    map.setFrameEnabled(drawFrame=True)
+    map.setFrameStrokeColor(color=QColor("black"))
+    map.setFrameStrokeWidth(width=QgsLayoutMeasurement(length=0.30, units=QgsUnitTypes.LayoutMillimeters))
+    layout.addLayoutItem(map)
 
 if __name__ == '__console__':
     # qgs_project_path = QgsProject.instance().readPath("./")
@@ -86,4 +102,7 @@ if __name__ == '__console__':
     #     raise Exception('Layer is invalid')
     # NeighboursLayer(layer=layer).symbolize_layer()
 
-    print(create_layout(layout_name="Buildings of Feuerbach with more than one neighbour"))
+    layout = create_layout(layout_name="Buildings of Feuerbach with more than one neighbour")
+
+    print(layout, "layout")
+    add_map_item(layout=layout)
