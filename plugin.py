@@ -1,5 +1,6 @@
 from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsMasterLayoutInterface, QgsPrintLayout, QgsLayoutItemPage, \
-     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar
+     QgsLayoutItemMap, QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar, \
+     QgsLayoutItemLegend
 from qgis.PyQt.QtCore import QVariant, Qt
 from qgis.PyQt.QtGui import QColor, QFont
 from qgis.utils import iface
@@ -119,13 +120,22 @@ def add_scale_bar(layout: QgsPrintLayout) -> None:
 
     scale.setLinkedMap(map=add_map_item(layout=layout))
 
-    scale.attemptMove(QgsLayoutPoint(70,178, QgsUnitTypes.LayoutMillimeters))
+    scale.attemptMove(QgsLayoutPoint(62,181, QgsUnitTypes.LayoutMillimeters))
     scale.setUnitsPerSegment(100)
     scale.setMapUnitsPerScaleBarUnit(1)
     layout.addLayoutItem(scale)
     return None
 
-def add_legend(layout: QgsPrintLayout) -> None: ...
+def add_legend(layout: QgsPrintLayout) -> None:
+    
+    legend = QgsLayoutItemLegend(layout=layout)
+    legend.setLinkedMap(map=add_map_item(layout=layout))
+    legend.setTitle(title="Legend")
+    legend.setTitleAlignment(alignment=Qt.AlignmentFlag.AlignCenter)
+    legend.attemptMove(QgsLayoutPoint(249,130, QgsUnitTypes.LayoutMillimeters))
+    legend.resizeToContents()
+    layout.addLayoutItem(legend)
+    return None
 def add_north_arrow(layout: QgsPrintLayout) -> None: ...
 
 
@@ -142,5 +152,5 @@ if __name__ == '__console__':
 
     # add_map_item(layout=layout)
     # add_map_title(layout=layout)
-    add_scale_bar(layout=layout)
+    add_legend(layout=layout)
 
