@@ -5,4 +5,4 @@ Kindly take note of the location of your data and the location of the QGIS proje
 To run the script, open the QGIS project and open the python console, create a new file and paste all the code and run the script. Alternatively, on the python console and open this script.
 
 #TODO
-1. Visualize the output point features in a map layout.
+[x] Visualize the output point features in a map layout.
