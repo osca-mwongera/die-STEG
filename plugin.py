@@ -1,4 +1,3 @@
-import os
 from qgis.core import QgsVectorLayer, QgsProject, QgsFeature, QgsField, QgsPrintLayout, QgsLayoutItemPage, QgsLayoutItemMap, \
      QgsLayoutPoint, QgsUnitTypes, QgsLayoutSize, QgsLayoutMeasurement, QgsLayoutItemLabel, QgsLayoutItemScaleBar, \
      QgsLayoutItemLegend, QgsLayoutItemPicture
@@ -64,7 +63,9 @@ class NeighboursLayer:
 
         return None
 
-def create_layout(layout_name: str):
+
+
+def create_layout(layout_name):
     project = QgsProject.instance()
     existing_layout = project.layoutManager().layoutByName(name=layout_name)  # Returns the layout with a matching name, or None if no matching layouts were found.
 
@@ -80,9 +81,9 @@ def create_layout(layout_name: str):
 
     project.layoutManager().addLayout(layout)
     return layout
-
-def add_map_item(layout: QgsPrintLayout) -> None:
-    map = QgsLayoutItemMap(layout)
+    
+def add_map_item(layout) -> None:
+    map = QgsLayoutItemMap(layout=layout)
     # Set map item position and size (by default, it is a 0 width/0 height item placed at 0,0)
     map.attemptMove(QgsLayoutPoint(22,24, QgsUnitTypes.LayoutMillimeters))
     map.attemptResize(QgsLayoutSize(222,153, QgsUnitTypes.LayoutMillimeters))
@@ -95,10 +96,10 @@ def add_map_item(layout: QgsPrintLayout) -> None:
     map.setFrameStrokeWidth(width=QgsLayoutMeasurement(length=0.30, units=QgsUnitTypes.LayoutMillimeters))
     layout.addLayoutItem(map)
     return map
-
-def add_map_title(layout: QgsPrintLayout) -> None:
+    
+def add_map_title(map_title, layout) -> None:
     title = QgsLayoutItemLabel(layout=layout)
-    title.setText(text="A Map of Buildings with more than one Neighbour in Feuerbach, Stuttgart")
+    title.setText(text=map_title)
     
     title_font = QFont("Helvetica", pointSize=16, weight=6, italic=False)
     title_font.setBold(True)
@@ -112,25 +113,24 @@ def add_map_title(layout: QgsPrintLayout) -> None:
     title.setVAlign(alignment=Qt.AlignmentFlag.AlignVCenter)
     layout.addLayoutItem(title)
     return None
-
-def add_scale_bar(layout: QgsPrintLayout) -> None:
+    
+def add_scale_bar(layout, map) -> None:
     scale = QgsLayoutItemScaleBar(layout=layout)
     scale.applyDefaultSettings()
     scale.setUnits(units=QgsUnitTypes.DistanceMeters)
     scale.setUnitLabel(label="m")
 
-    scale.setLinkedMap(map=add_map_item(layout=layout))
+    scale.setLinkedMap(map=map)
 
     scale.attemptMove(QgsLayoutPoint(62,181, QgsUnitTypes.LayoutMillimeters))
-    scale.setUnitsPerSegment(100)
+    scale.setUnitsPerSegment(250)
     scale.setMapUnitsPerScaleBarUnit(1)
     layout.addLayoutItem(scale)
     return None
 
-def add_legend(layout: QgsPrintLayout) -> None:
-    
+def add_legend(layout, map) -> None:
     legend = QgsLayoutItemLegend(layout=layout)
-    legend.setLinkedMap(map=add_map_item(layout=layout))
+    legend.setLinkedMap(map=map)
     legend.setTitle(title="Legend")
     legend.setTitleAlignment(alignment=Qt.AlignmentFlag.AlignCenter)
     legend.attemptMove(QgsLayoutPoint(249,130, QgsUnitTypes.LayoutMillimeters))
@@ -138,13 +138,13 @@ def add_legend(layout: QgsPrintLayout) -> None:
     layout.addLayoutItem(legend)
     return None
 
-def add_north_arrow(layout: QgsPrintLayout, arrow_path) -> None:
+def add_north_arrow(layout, map, arrow_icon_path) -> None:
     north_arrow = QgsLayoutItemPicture(layout=layout)
     north_arrow.setNorthMode(QgsLayoutItemPicture.NorthMode.GridNorth)
     north_arrow.setMode(QgsLayoutItemPicture.Format.FormatSVG)
     north_arrow.setResizeMode(QgsLayoutItemPicture.ResizeMode.Zoom)
-    north_arrow.setLinkedMap(map=add_map_item(layout=layout))
-    north_arrow.setPicturePath(path=arrow_path)
+    north_arrow.setLinkedMap(map=map)
+    north_arrow.setPicturePath(path=arrow_icon_path)
     
     north_arrow.attemptMove(QgsLayoutPoint(249,23, QgsUnitTypes.LayoutMillimeters))
     north_arrow.attemptResize(QgsLayoutSize(width=48, height=88, units=QgsUnitTypes.LayoutMillimeters))
@@ -152,19 +152,24 @@ def add_north_arrow(layout: QgsPrintLayout, arrow_path) -> None:
     return None
 
 if __name__ == '__console__':
-    qgs_project_path = QgsProject.instance().readPath("./")
-    # layer_relative_path = "/Output/Buildings.shp"
-    # layer_path = qgs_project_path + layer_relative_path
-    # layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
-    # if not layer.isValid():
-    #     raise Exception('Layer is invalid')
-    # NeighboursLayer(layer=layer).symbolize_layer()
+    project = QgsProject.instance()
+    qgs_project_path = project.readPath("./")
+    layer_relative_path = "/Output/Buildings.shp"
+    layer_path = qgs_project_path + layer_relative_path
+    layer = QgsVectorLayer(layer_path, "Buildings", "ogr")
+    if not layer.isValid():
+        raise Exception('Layer is invalid')
+    NeighboursLayer(layer=layer).symbolize_layer()
 
-    layout = create_layout(layout_name="Buildings of Feuerbach with more than one neighbour")
-
-    # add_map_item(layout=layout)
-    # add_map_title(layout=layout)
-    add_legend(layout=layout)
-    arrow_path = qgs_project_path + "/Input/NorthArrow_04.svg"
-    add_north_arrow(layout=layout, arrow_path=arrow_path)
-
+    
+    layout_name="Buildings of Feuerbach with more than one neighbour"
+    arrow_icon_path = qgs_project_path + "/Input/NorthArrow_04.svg"
+    map_title = "A Map of Buildings with more than one Neighbour in Feuerbach, Stuttgart"
+    arrow_icon_path = qgs_project_path + "/Input/NorthArrow_04.svg"
+    
+    layout = create_layout(layout_name=layout_name)
+    map_item = add_map_item(layout=layout)
+    add_map_title(map_title=map_title, layout=layout)
+    add_scale_bar(layout=layout, map=map_item)
+    add_legend(layout=layout, map=map_item)
+    add_north_arrow(layout=layout, map=map_item, arrow_icon_path=arrow_icon_path)
